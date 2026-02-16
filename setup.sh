@@ -19,6 +19,12 @@ warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; }
 step()  { echo -e "\n${BOLD}==> $1${NC}"; }
 
+# Use sudo only when not already root
+SUDO=""
+if [[ "$EUID" -ne 0 ]]; then
+  SUDO="sudo"
+fi
+
 # ----------------------------------------------------------
 # Step 1: Detect OS
 # ----------------------------------------------------------
@@ -65,12 +71,12 @@ elif [[ "$OS" == "ubuntu" ]]; then
   # Add Neovim PPA for 0.11+
   if ! apt-cache policy neovim 2>/dev/null | grep -q "0\.11\|0\.12"; then
     info "Adding Neovim unstable PPA (needed for v0.11+)..."
-    sudo apt-get install -y software-properties-common
-    sudo add-apt-repository -y ppa:neovim-ppa/unstable
+    $SUDO apt-get install -y software-properties-common
+    $SUDO add-apt-repository -y ppa:neovim-ppa/unstable
   fi
 
   info "Updating apt cache..."
-  sudo apt-get update -y
+  $SUDO apt-get update -y
 
   APT_PACKAGES=(neovim tmux ripgrep fd-find bat git curl build-essential unzip xclip)
   for pkg in "${APT_PACKAGES[@]}"; do
@@ -78,7 +84,7 @@ elif [[ "$OS" == "ubuntu" ]]; then
       info "$pkg is already installed"
     else
       info "Installing $pkg..."
-      sudo apt-get install -y "$pkg"
+      $SUDO apt-get install -y "$pkg"
     fi
   done
 
@@ -108,8 +114,8 @@ elif [[ "$OS" == "ubuntu" ]]; then
   # Install Node.js if missing (needed for Mason LSP servers + tree-sitter-cli)
   if ! command -v node &>/dev/null; then
     info "Installing Node.js 20.x..."
-    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    curl -fsSL https://deb.nodesource.com/setup_20.x | $SUDO bash -
+    $SUDO apt-get install -y nodejs
     info "Node.js $(node --version) installed"
   else
     info "Node.js $(node --version) already installed"
@@ -118,7 +124,7 @@ elif [[ "$OS" == "ubuntu" ]]; then
   # Install tree-sitter-cli via npm
   if ! command -v tree-sitter &>/dev/null; then
     info "Installing tree-sitter-cli via npm..."
-    sudo npm install -g tree-sitter-cli
+    $SUDO npm install -g tree-sitter-cli
     info "tree-sitter $(tree-sitter --version) installed"
   else
     info "tree-sitter $(tree-sitter --version) already installed"
@@ -130,7 +136,7 @@ elif [[ "$OS" == "ubuntu" ]]; then
     DELTA_VERSION="0.18.2"
     ARCH=$(dpkg --print-architecture)
     curl -fsSL "https://github.com/dandavison/delta/releases/download/${DELTA_VERSION}/git-delta_${DELTA_VERSION}_${ARCH}.deb" -o /tmp/git-delta.deb
-    sudo dpkg -i /tmp/git-delta.deb
+    $SUDO dpkg -i /tmp/git-delta.deb
     rm -f /tmp/git-delta.deb
     info "git-delta installed"
   else
@@ -227,7 +233,7 @@ fi
 # Install tmux plugins non-interactively
 if [ -f "$TPM_DIR/bin/install_plugins" ]; then
   info "Installing tmux plugins..."
-  "$TPM_DIR/bin/install_plugins" || warn "tmux plugin install had issues (may need tmux running)"
+  TMUX_PLUGIN_MANAGER_PATH="$HOME/.tmux/plugins" "$TPM_DIR/bin/install_plugins" || warn "tmux plugin install had issues (may need tmux running)"
 fi
 
 # ----------------------------------------------------------
@@ -236,7 +242,7 @@ fi
 step "Installing Neovim plugins via lazy.nvim..."
 
 info "Running headless Neovim to bootstrap lazy.nvim and install plugins..."
-nvim --headless -c "Lazy! sync" -c "qa" 2>&1 || true
+nvim --headless "+Lazy! sync" "+sleep 15" "+qa" 2>&1 || true
 info "Plugins installed"
 
 # ----------------------------------------------------------
@@ -244,26 +250,18 @@ info "Plugins installed"
 # ----------------------------------------------------------
 step "Installing treesitter parsers..."
 
-info "Compiling parsers for Python, C, C++, Lua, Bash, etc..."
-nvim --headless -c "TSInstall! python c cpp lua bash json yaml toml markdown markdown_inline vim vimdoc diff gitcommit dockerfile make cmake regex" -c "sleep 30" -c "qa" 2>&1 || true
+info "Compiling parsers via ensure_installed (defined in treesitter.lua)..."
+nvim --headless "+sleep 45" "+qa" 2>&1 || true
 info "Treesitter parsers installed"
 
 # ----------------------------------------------------------
-# Step 8: Install LSP servers via Mason (headless)
+# Step 8: Install LSP servers, formatters, linters, debug adapters via Mason
 # ----------------------------------------------------------
-step "Installing LSP servers via Mason..."
+step "Installing LSP servers, formatters, and debug adapters via Mason..."
 
-info "Installing pyright, clangd, lua_ls..."
-nvim --headless -c "MasonInstall pyright clangd lua-language-server" -c "sleep 30" -c "qa" 2>&1 || true
-info "LSP servers installed"
-
-# ----------------------------------------------------------
-# Step 9: Install Python linting/formatting tools via Mason
-# ----------------------------------------------------------
-step "Installing formatters, linters, and debug adapters via Mason..."
-
-nvim --headless -c "MasonInstall ruff black debugpy" -c "sleep 15" -c "qa" 2>&1 || true
-info "Formatters, linters, and debug adapters installed"
+info "Installing pyright, clangd, lua_ls, ruff, black, debugpy..."
+nvim --headless "+MasonInstall pyright clangd lua-language-server ruff black debugpy" "+sleep 60" "+qa" 2>&1 || true
+info "Mason packages installed"
 
 # ----------------------------------------------------------
 # Step 10: Install OpenCode if missing
@@ -271,7 +269,7 @@ info "Formatters, linters, and debug adapters installed"
 if ! command -v opencode &>/dev/null; then
   step "Installing OpenCode..."
   if command -v npm &>/dev/null; then
-    sudo npm install -g opencode-ai 2>/dev/null || npm install -g opencode-ai 2>/dev/null || warn "OpenCode install failed. Install manually: https://opencode.ai"
+    $SUDO npm install -g opencode-ai 2>/dev/null || npm install -g opencode-ai 2>/dev/null || warn "OpenCode install failed. Install manually: https://opencode.ai"
   else
     warn "npm not available. Install OpenCode manually: https://opencode.ai"
   fi

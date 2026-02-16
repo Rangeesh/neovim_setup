@@ -5,10 +5,16 @@ return {
     build = ":TSUpdate",
     lazy = false, -- load eagerly so parsers are available immediately
     config = function()
-      -- Parsers are pre-installed via setup.sh (TSInstall command).
-      -- Neovim 0.11+ auto-enables treesitter highlighting for any
-      -- filetype with an installed parser via the bundled filetypes.lua
-      -- plugin. No manual vim.treesitter.start() needed.
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
+          "python", "c", "cpp", "lua", "bash",
+          "json", "yaml", "toml", "markdown",
+          "markdown_inline", "vim", "vimdoc",
+          "diff", "gitcommit", "dockerfile",
+          "make", "cmake", "regex",
+        },
+        auto_install = true,
+      })
     end,
   },
 
