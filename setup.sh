@@ -242,7 +242,7 @@ fi
 step "Installing Neovim plugins via lazy.nvim..."
 
 info "Running headless Neovim to bootstrap lazy.nvim and install plugins..."
-nvim --headless "+Lazy! sync" "+sleep 15" "+qa" 2>&1 || true
+nvim --headless -c "lua require('lazy').sync({wait=true})" -c "qa" 2>&1 || true
 info "Plugins installed"
 
 # ----------------------------------------------------------
@@ -251,7 +251,7 @@ info "Plugins installed"
 step "Installing treesitter parsers..."
 
 info "Compiling parsers via ensure_installed (defined in treesitter.lua)..."
-nvim --headless "+sleep 45" "+qa" 2>&1 || true
+nvim --headless -c "lua vim.defer_fn(function() vim.cmd('qa') end, 45000)" 2>&1 || true
 info "Treesitter parsers installed"
 
 # ----------------------------------------------------------
@@ -260,7 +260,7 @@ info "Treesitter parsers installed"
 step "Installing LSP servers, formatters, and debug adapters via Mason..."
 
 info "Installing pyright, clangd, lua_ls, ruff, black, debugpy..."
-nvim --headless "+MasonInstall pyright clangd lua-language-server ruff black debugpy" "+sleep 60" "+qa" 2>&1 || true
+nvim --headless -c "lua vim.defer_fn(function() vim.cmd('MasonInstall pyright clangd lua-language-server ruff black debugpy') end, 3000)" -c "sleep 90" -c "qa" 2>&1 || true
 info "Mason packages installed"
 
 # ----------------------------------------------------------
