@@ -242,6 +242,9 @@ fi
 step "Installing Neovim plugins via lazy.nvim..."
 
 info "Running headless Neovim to bootstrap lazy.nvim and install plugins..."
+# First launch: bootstrap lazy.nvim (clone + setup). init.lua handles this automatically.
+# Second launch: sync all plugins. By now lazy.nvim is cloned and on the rtp.
+nvim --headless -c "qa" 2>&1 || true
 nvim --headless -c "lua require('lazy').sync({wait=true})" -c "qa" 2>&1 || true
 info "Plugins installed"
 
