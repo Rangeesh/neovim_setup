@@ -1,0 +1,11 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Neovim local state (plugins are installed by lazy.nvim on first run)
+nvim/plugin/
+
+# Backup files
+*.bak
+*~
+*.swp
