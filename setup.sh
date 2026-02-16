@@ -263,7 +263,8 @@ info "Treesitter parsers installed"
 step "Installing LSP servers, formatters, and debug adapters via Mason..."
 
 info "Installing pyright, clangd, lua_ls, ruff, black, debugpy..."
-nvim --headless -c "lua vim.defer_fn(function() vim.cmd('MasonInstall pyright clangd lua-language-server ruff black debugpy') end, 3000)" -c "sleep 90" -c "qa" 2>&1 || true
+# Use Mason's Lua API directly to avoid ex command timing issues on first run
+nvim --headless -c "lua local r = require('mason-registry'); r.refresh(function() local pkgs = {'pyright','clangd','lua-language-server','ruff','black','debugpy'}; for _,name in ipairs(pkgs) do local ok, p = pcall(r.get_package, name); if ok and not p:is_installed() then p:install() end end end)" -c "sleep 90" -c "qa" 2>&1 || true
 info "Mason packages installed"
 
 # ----------------------------------------------------------
