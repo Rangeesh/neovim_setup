@@ -241,10 +241,16 @@ fi
 # ----------------------------------------------------------
 step "Installing Neovim plugins via lazy.nvim..."
 
-info "Running headless Neovim to bootstrap lazy.nvim and install plugins..."
-# First launch: bootstrap lazy.nvim (clone + setup). init.lua handles this automatically.
-# Second launch: sync all plugins. By now lazy.nvim is cloned and on the rtp.
-nvim --headless -c "qa" 2>&1 || true
+# Pre-clone lazy.nvim from bash so it's guaranteed on disk before Neovim runs
+LAZY_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy/lazy.nvim"
+if [ ! -d "$LAZY_DIR" ]; then
+  info "Cloning lazy.nvim..."
+  git clone --filter=blob:none --branch=stable https://github.com/folke/lazy.nvim.git "$LAZY_DIR"
+else
+  info "lazy.nvim already cloned"
+fi
+
+info "Running headless Neovim to sync plugins..."
 nvim --headless -c "lua require('lazy').sync({wait=true})" -c "qa" 2>&1 || true
 info "Plugins installed"
 
@@ -253,8 +259,8 @@ info "Plugins installed"
 # ----------------------------------------------------------
 step "Installing treesitter parsers..."
 
-info "Compiling parsers via ensure_installed (defined in treesitter.lua)..."
-nvim --headless -c "lua vim.defer_fn(function() vim.cmd('qa') end, 45000)" 2>&1 || true
+info "Compiling parsers (triggered by treesitter.lua config on startup)..."
+nvim --headless -c "lua vim.defer_fn(function() vim.cmd('qa') end, 60000)" 2>&1 || true
 info "Treesitter parsers installed"
 
 # ----------------------------------------------------------
