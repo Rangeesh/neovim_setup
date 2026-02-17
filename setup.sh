@@ -219,8 +219,29 @@ fi
 # OpenCode
 mkdir -p "$HOME/.opencode/config"
 rm -f "$HOME/.opencode/config/opencode.json"
-cp "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
-info "Copied: $DOTFILES_DIR/opencode/opencode.json -> ~/.opencode/config/opencode.json"
+if [[ "$OS" == "macos" ]]; then
+  cp "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
+else
+  # Remote machines use env vars for credentials (via ada cred serve + SSH port forwarding)
+  cp "$DOTFILES_DIR/opencode/opencode.remote.json" "$HOME/.opencode/config/opencode.json"
+fi
+info "Copied OpenCode config to ~/.opencode/config/opencode.json"
+
+# On remote/Ubuntu, add AWS env vars for credential forwarding via ada cred serve
+if [[ "$OS" == "ubuntu" ]]; then
+  AWS_ENVS='# AWS credentials via ada cred serve (port-forwarded from local machine)
+export AWS_CONTAINER_CREDENTIALS_FULL_URI="http://127.0.0.1:9922"
+export AWS_SHARED_CREDENTIALS_FILE="/dev/null"
+export AWS_REGION="us-east-1"'
+
+  for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+    if [ -f "$rc" ] && ! grep -q 'AWS_CONTAINER_CREDENTIALS_FULL_URI' "$rc"; then
+      echo "" >> "$rc"
+      echo "$AWS_ENVS" >> "$rc"
+      info "Added AWS credential env vars to $(basename "$rc")"
+    fi
+  done
+fi
 
 # ----------------------------------------------------------
 # Step 6: Install TMUX Plugin Manager (tpm)
@@ -230,7 +251,7 @@ step "Setting up TMUX plugins..."
 TPM_DIR="$HOME/.tmux/plugins/tpm"
 if [ -d "$TPM_DIR" ]; then
   info "tpm already installed, updating..."
-  git -C "$TPM_DIR" pull --quiet
+  git -C "$TPM_DIR" pull --quiet || warn "Could not update tpm (network issue?)"
 else
   info "Cloning tpm..."
   git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
