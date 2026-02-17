@@ -19,7 +19,7 @@ fi
 # Parse credentials (handles both ada cred serve JSON formats)
 export AWS_ACCESS_KEY_ID=$(echo "$CREDS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('AccessKeyId', d.get('accessKeyId', '')))" 2>/dev/null)
 export AWS_SECRET_ACCESS_KEY=$(echo "$CREDS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('SecretAccessKey', d.get('secretAccessKey', '')))" 2>/dev/null)
-export AWS_SESSION_TOKEN=$(echo "$CREDS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('SessionToken', d.get('sessionToken', '')))" 2>/dev/null)
+export AWS_SESSION_TOKEN=$(echo "$CREDS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('Token', d.get('SessionToken', d.get('sessionToken', ''))))" 2>/dev/null)
 export AWS_REGION="${AWS_REGION:-us-east-1}"
 
 # Don't let local AWS config interfere
