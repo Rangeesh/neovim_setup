@@ -216,6 +216,15 @@ if [[ "$OS" == "macos" ]]; then
   info "Linked: ~/.wezterm.lua -> $DOTFILES_DIR/wezterm/.wezterm.lua"
 fi
 
+# OpenCode
+mkdir -p "$HOME/.opencode/config"
+if [ -f "$HOME/.opencode/config/opencode.json" ] && [ ! -L "$HOME/.opencode/config/opencode.json" ]; then
+  warn "Backing up existing opencode.json to ~/.opencode/config/opencode.json.bak"
+  mv "$HOME/.opencode/config/opencode.json" "$HOME/.opencode/config/opencode.json.bak"
+fi
+ln -sf "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
+info "Linked: ~/.opencode/config/opencode.json -> $DOTFILES_DIR/opencode/opencode.json"
+
 # ----------------------------------------------------------
 # Step 6: Install TMUX Plugin Manager (tpm)
 # ----------------------------------------------------------
@@ -237,41 +246,30 @@ if [ -f "$TPM_DIR/bin/install_plugins" ]; then
 fi
 
 # ----------------------------------------------------------
-# Step 7: First Neovim launch (headless plugin install)
+# Step 7: Headless Neovim install (plugins, parsers, LSPs)
 # ----------------------------------------------------------
-step "Installing Neovim plugins via lazy.nvim..."
+step "Installing Neovim plugins, treesitter parsers, and LSP servers..."
 
-# Pre-clone lazy.nvim from bash so it's guaranteed on disk before Neovim runs
-LAZY_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy/lazy.nvim"
-if [ ! -d "$LAZY_DIR" ]; then
-  info "Cloning lazy.nvim..."
-  git clone --filter=blob:none --branch=stable https://github.com/folke/lazy.nvim.git "$LAZY_DIR"
-else
-  info "lazy.nvim already cloned"
-fi
+info "This will take a few minutes (downloading plugins, compiling parsers, installing LSPs)..."
 
-info "Running headless Neovim to sync plugins..."
-nvim --headless -c "lua require('lazy').sync({wait=true})" -c "qa" 2>&1 || true
-info "Plugins installed"
+# Step 7a: Sync plugins via lazy.nvim
+# On first run, init.lua clones lazy.nvim, then Lazy! sync downloads all plugins.
+# Plugin configs use pcall so missing modules don't crash the bootstrap.
+info "Syncing plugins..."
+nvim --headless -c "Lazy! sync" -c "qa" 2>&1 || true
 
-# ----------------------------------------------------------
 # Step 7b: Install treesitter parsers
-# ----------------------------------------------------------
-step "Installing treesitter parsers..."
+# Now that nvim-treesitter is downloaded, the config in treesitter.lua
+# calls install.install(parsers) on startup. Just let it run + wait.
+info "Compiling treesitter parsers (this takes ~60s)..."
+nvim --headless -c "sleep 60" -c "qa" 2>&1 || true
 
-info "Compiling parsers (triggered by treesitter.lua config on startup)..."
-nvim --headless -c "lua vim.defer_fn(function() vim.cmd('qa') end, 60000)" 2>&1 || true
-info "Treesitter parsers installed"
+# Step 7c: Install Mason packages (LSPs, formatters, debug adapters)
+# Mason is now downloaded and loaded, so MasonInstall works.
+info "Installing LSP servers and tools via Mason..."
+nvim --headless -c "MasonInstall pyright clangd lua-language-server ruff black debugpy" -c "sleep 90" -c "qa" 2>&1 || true
 
-# ----------------------------------------------------------
-# Step 8: Install LSP servers, formatters, linters, debug adapters via Mason
-# ----------------------------------------------------------
-step "Installing LSP servers, formatters, and debug adapters via Mason..."
-
-info "Installing pyright, clangd, lua_ls, ruff, black, debugpy..."
-# Use Mason's Lua API directly to avoid ex command timing issues on first run
-nvim --headless -c "lua local r = require('mason-registry'); r.refresh(function() local pkgs = {'pyright','clangd','lua-language-server','ruff','black','debugpy'}; for _,name in ipairs(pkgs) do local ok, p = pcall(r.get_package, name); if ok and not p:is_installed() then p:install() end end end)" -c "sleep 90" -c "qa" 2>&1 || true
-info "Mason packages installed"
+info "Neovim setup complete"
 
 # ----------------------------------------------------------
 # Step 10: Install OpenCode if missing

@@ -8,8 +8,11 @@ return {
       -- nvim-treesitter (latest) removed the old configs module.
       -- Neovim 0.11+ auto-enables treesitter highlighting for any
       -- filetype with an installed parser. Use TSInstall or setup.sh
-      -- to install parsers. auto_install via the install module:
-      local install = require("nvim-treesitter.install")
+      -- to install parsers.
+      local ok, install = pcall(require, "nvim-treesitter.install")
+      if not ok then
+        return -- plugin not yet downloaded (first boot via setup.sh)
+      end
       install.auto_install = true
 
       -- Install desired parsers if missing
