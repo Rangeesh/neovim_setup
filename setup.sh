@@ -7,7 +7,7 @@ set -euo pipefail
 # Compatible with: macOS (Homebrew) and Ubuntu/Debian (apt)
 # ==============================================================================
 
-DOTFILES_DIR="$HOME/dotfiles"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOLD='\033[1m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
