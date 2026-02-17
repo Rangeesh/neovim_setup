@@ -78,7 +78,7 @@ elif [[ "$OS" == "ubuntu" ]]; then
   info "Updating apt cache..."
   $SUDO apt-get update -y
 
-  APT_PACKAGES=(neovim tmux ripgrep fd-find bat git curl build-essential unzip xclip)
+  APT_PACKAGES=(neovim tmux ripgrep fd-find bat git curl build-essential unzip xclip python3-venv)
   for pkg in "${APT_PACKAGES[@]}"; do
     if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
       info "$pkg is already installed"
@@ -218,12 +218,8 @@ fi
 
 # OpenCode
 mkdir -p "$HOME/.opencode/config"
-if [ -f "$HOME/.opencode/config/opencode.json" ] && [ ! -L "$HOME/.opencode/config/opencode.json" ]; then
-  warn "Backing up existing opencode.json to ~/.opencode/config/opencode.json.bak"
-  mv "$HOME/.opencode/config/opencode.json" "$HOME/.opencode/config/opencode.json.bak"
-fi
-ln -sf "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
-info "Linked: ~/.opencode/config/opencode.json -> $DOTFILES_DIR/opencode/opencode.json"
+cp -f "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
+info "Copied: $DOTFILES_DIR/opencode/opencode.json -> ~/.opencode/config/opencode.json"
 
 # ----------------------------------------------------------
 # Step 6: Install TMUX Plugin Manager (tpm)
