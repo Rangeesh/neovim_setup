@@ -218,7 +218,8 @@ fi
 
 # OpenCode
 mkdir -p "$HOME/.opencode/config"
-cp -f "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
+rm -f "$HOME/.opencode/config/opencode.json"
+cp "$DOTFILES_DIR/opencode/opencode.json" "$HOME/.opencode/config/opencode.json"
 info "Copied: $DOTFILES_DIR/opencode/opencode.json -> ~/.opencode/config/opencode.json"
 
 # ----------------------------------------------------------
