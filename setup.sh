@@ -252,11 +252,21 @@ step "Installing Neovim plugins, treesitter parsers, and LSP servers..."
 
 info "This will take a few minutes (downloading plugins, compiling parsers, installing LSPs)..."
 
+# Pre-clone lazy.nvim from bash to guarantee it exists before Neovim starts.
+# init.lua also clones it, but vim.fn.system() can silently fail in headless mode.
+LAZY_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/nvim/lazy/lazy.nvim"
+if [ ! -d "$LAZY_DIR" ]; then
+  info "Cloning lazy.nvim..."
+  git clone --filter=blob:none --branch=stable https://github.com/folke/lazy.nvim.git "$LAZY_DIR"
+else
+  info "lazy.nvim already cloned"
+fi
+
 # Step 7a: Sync plugins via lazy.nvim
-# On first run, init.lua clones lazy.nvim, then Lazy! sync downloads all plugins.
-# Plugin configs use pcall so missing modules don't crash the bootstrap.
+# init.lua prepends lazy.nvim to rtp and calls require("lazy").setup().
+# We then call sync() via Lua API (more reliable than the :Lazy ex command).
 info "Syncing plugins..."
-nvim --headless -c "Lazy! sync" -c "qa" 2>&1 || true
+nvim --headless -c "lua require('lazy').sync({wait=true})" -c "qa" 2>&1 || true
 
 # Step 7b: Install treesitter parsers
 # Now that nvim-treesitter is downloaded, the config in treesitter.lua
