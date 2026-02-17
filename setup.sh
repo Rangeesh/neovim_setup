@@ -55,7 +55,7 @@ if [[ "$OS" == "macos" ]]; then
   fi
   info "Homebrew $(brew --version | head -1 | awk '{print $2}') found"
 
-  BREW_PACKAGES=(neovim ripgrep fd bat git-delta tree-sitter tree-sitter-cli)
+  BREW_PACKAGES=(neovim ripgrep fd bat fzf git-delta tree-sitter tree-sitter-cli)
   for pkg in "${BREW_PACKAGES[@]}"; do
     if brew list "$pkg" &>/dev/null; then
       info "$pkg is already installed"
@@ -78,7 +78,7 @@ elif [[ "$OS" == "ubuntu" ]]; then
   info "Updating apt cache..."
   $SUDO apt-get update -y
 
-  APT_PACKAGES=(neovim tmux ripgrep fd-find bat git curl build-essential unzip xclip python3-venv)
+  APT_PACKAGES=(neovim tmux ripgrep fd-find bat fzf git curl build-essential unzip xclip python3-venv)
   for pkg in "${APT_PACKAGES[@]}"; do
     if dpkg -l "$pkg" 2>/dev/null | grep -q "^ii"; then
       info "$pkg is already installed"
