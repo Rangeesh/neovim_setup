@@ -224,21 +224,24 @@ if [[ "$OS" == "macos" ]]; then
 else
   # Remote machines use env vars for credentials (via ada cred serve + SSH port forwarding)
   cp "$DOTFILES_DIR/opencode/opencode.remote.json" "$HOME/.opencode/config/opencode.json"
+
+  # Install opencode-remote wrapper script that fetches creds from ada cred serve
+  cp "$DOTFILES_DIR/opencode/opencode-remote" "$HOME/.local/bin/opencode-remote"
+  chmod +x "$HOME/.local/bin/opencode-remote"
+  info "Installed opencode-remote wrapper to ~/.local/bin/opencode-remote"
 fi
 info "Copied OpenCode config to ~/.opencode/config/opencode.json"
 
-# On remote/Ubuntu, add AWS env vars for credential forwarding via ada cred serve
+# On remote/Ubuntu, add AWS env vars to shell RC for tools that support credential chain
 if [[ "$OS" == "ubuntu" ]]; then
-  AWS_ENVS='# AWS credentials via ada cred serve (port-forwarded from local machine)
-export AWS_CONTAINER_CREDENTIALS_FULL_URI="http://127.0.0.1:9922"
-export AWS_SHARED_CREDENTIALS_FILE="/dev/null"
+  AWS_ENVS='# AWS region for Bedrock
 export AWS_REGION="us-east-1"'
 
   for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
-    if [ -f "$rc" ] && ! grep -q 'AWS_CONTAINER_CREDENTIALS_FULL_URI' "$rc"; then
+    if [ -f "$rc" ] && ! grep -q 'AWS_REGION.*us-east-1' "$rc"; then
       echo "" >> "$rc"
       echo "$AWS_ENVS" >> "$rc"
-      info "Added AWS credential env vars to $(basename "$rc")"
+      info "Added AWS_REGION to $(basename "$rc")"
     fi
   done
 fi
