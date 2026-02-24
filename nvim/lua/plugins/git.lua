@@ -53,7 +53,6 @@ return {
   -- Git-conflict: inline merge/rebase conflict resolution (VSCode-style)
   {
     "akinsho/git-conflict.nvim",
-    version = "*",
     event = "BufReadPost",
     opts = {
       default_mappings = true, -- co=ours, ct=theirs, cb=both, c0=none, ]x/[x=navigate
