@@ -67,6 +67,18 @@ return {
         mode = { "x" },
         desc = "Send visual selection",
       },
+      -- Explain code (like avante explain)
+      {
+        "<leader>ae",
+        function() require("sidekick.cli").send({ msg = "Explain {this}" }) end,
+        desc = "Explain code at cursor",
+      },
+      {
+        "<leader>ae",
+        function() require("sidekick.cli").send({ msg = "Explain {selection}" }) end,
+        mode = { "x" },
+        desc = "Explain selected code",
+      },
       -- Prompt picker
       {
         "<leader>ap",

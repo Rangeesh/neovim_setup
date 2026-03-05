@@ -27,6 +27,9 @@ config.front_end = "WebGpu"
 -- Terminal
 config.term = "xterm-256color"
 
+-- Notifications
+config.notification_handling = "AlwaysShow"
+
 -- Keybinds for tmux-friendly usage
 config.keys = {
   -- Cmd+d for vertical split (sends tmux prefix + |)
