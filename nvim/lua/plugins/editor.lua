@@ -13,9 +13,11 @@ return {
         { "<leader>h", group = "git hunks" },
         { "<leader>a", group = "ai (OpenCode)" },
         { "<leader>b", group = "buffer" },
-        { "<leader>s", group = "swap" },
+        { "<leader>s", group = "search/replace" },
         { "<leader>d", group = "debug" },
         { "<leader>x", group = "trouble/diagnostics" },
+        { "<leader>n", group = "notes" },
+        { "<leader>t", group = "terminal", icon = " " },
       },
     },
   },
@@ -53,9 +55,13 @@ return {
         },
       },
       window = {
-        width = 35,
+        width = 45,
         mappings = {
           ["<space>"] = "none",
+          ["<C-h>"] = function() vim.cmd("TmuxNavigateLeft") end,
+          ["<C-j>"] = function() vim.cmd("TmuxNavigateDown") end,
+          ["<C-k>"] = function() vim.cmd("TmuxNavigateUp") end,
+          ["<C-l>"] = function() vim.cmd("TmuxNavigateRight") end,
         },
       },
       default_component_configs = {
@@ -155,7 +161,7 @@ return {
   -- Vim-tmux-navigator: seamless navigation between vim and tmux panes
   {
     "christoomey/vim-tmux-navigator",
-    event = "VeryLazy",
+    lazy = false,
     cmd = {
       "TmuxNavigateLeft",
       "TmuxNavigateDown",
@@ -207,7 +213,43 @@ return {
       notifier = { enabled = true },
       quickfile = { enabled = true },
       scope = { enabled = true },
+      terminal = { enabled = true },
       words = { enabled = true },
+    },
+  },
+
+  -- Grug-far: project-wide find and replace (VSCode-like)
+  {
+    "MagicDuck/grug-far.nvim",
+    cmd = "GrugFar",
+    keys = {
+      {
+        "<leader>sr",
+        function()
+          require("grug-far").open()
+        end,
+        desc = "Find and replace (project)",
+      },
+      {
+        "<leader>sw",
+        function()
+          require("grug-far").open({ prefills = { search = vim.fn.expand("<cword>") } })
+        end,
+        desc = "Replace word under cursor",
+      },
+      {
+        "<leader>sr",
+        function()
+          require("grug-far").open({ visual = true })
+        end,
+        mode = "v",
+        desc = "Replace selection",
+      },
+    },
+    opts = {
+      headerHeight = 3,
+      windowCreationCommand = "split",
+      transient = true,
     },
   },
 }

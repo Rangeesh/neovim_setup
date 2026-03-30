@@ -62,9 +62,40 @@ autocmd("FileType", {
     vim.opt_local.softtabstop = 4
     vim.opt_local.expandtab = true
     vim.opt_local.colorcolumn = "88"
-    -- Force self/cls to orange via vim.match (higher priority than treesitter extmarks)
+
+    -- matchadd overrides (priority 300 beats treesitter extmarks at 100)
+    -- self/cls -> orange italic
     vim.fn.matchadd("SelfKeyword", [[\<self\>]], 300)
     vim.fn.matchadd("SelfKeyword", [[\<cls\>]], 300)
+
+    -- Module paths: dotted names after from/import -> cyan italic
+    vim.fn.matchadd("PyModule", [[\v(from\s+)@<=(\w+\.)+\w+]], 300)
+    vim.fn.matchadd("PyModule", [[\v(import\s+)@<=(\w+\.)+\w+]], 300)
+
+    -- Imported names: CamelCase names in import blocks -> cyan (types/classes)
+    vim.fn.matchadd("PyType", "\\v(import\\s+\\(?\\n?\\s*)@<=[A-Z]\\w*", 300)
+    vim.fn.matchadd("PyType", "\\v^\\s+[A-Z]\\w*\\ze\\s*,?\\s*$", 300)
+
+    -- Type annotations: CamelCase after : or -> -> cyan
+    vim.fn.matchadd("PyType", "\\v(:\\s*)@<=[A-Z]\\w*", 300)
+    vim.fn.matchadd("PyType", "\\v(->\\s*)@<=[A-Z]\\w*", 300)
+
+    -- Superclass names: CamelCase inside class Foo(Bar, Baz) -> cyan
+    vim.fn.matchadd("PyType", "\\v(class\\s+\\w+\\()@<=[A-Z]\\w*", 300)
+    vim.fn.matchadd("PyType", "\\v(,\\s*)@<=[A-Z]\\w*\\ze\\s*[,)]", 300)
+
+    -- Imported lowercase names (functions): after import ( on indented lines -> green
+    vim.fn.matchadd("PyFuncImport", "\\v^\\s+[a-z_]\\w*\\ze\\s*,?\\s*$", 290)
+
+    -- UPPER_CASE constants -> purple
+    vim.fn.matchadd("PyConstant", "\\v<[A-Z][A-Z0-9_]+>", 290)
+
+    -- CamelCase identifiers anywhere (class names, constructors, type refs) -> cyan
+    -- Matches words starting with uppercase followed by at least one lowercase letter
+    vim.fn.matchadd("PyType", "\\v<[A-Z][a-zA-Z0-9]*[a-z][a-zA-Z0-9]*>", 280)
+
+    -- Function/method calls: any word immediately followed by ( -> green
+    vim.fn.matchadd("PyFuncImport", "\\v<[a-z_][a-zA-Z0-9_]*\\ze\\(", 280)
   end,
 })
 

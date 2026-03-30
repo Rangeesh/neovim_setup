@@ -26,7 +26,10 @@ vim.opt.cursorline = true
 vim.opt.colorcolumn = "88"
 vim.opt.scrolloff = 8
 vim.opt.sidescrolloff = 8
-vim.opt.wrap = false
+vim.opt.wrap = true
+vim.opt.linebreak = true        -- when wrap is on, break at word boundaries (not mid-word)
+vim.opt.breakindent = true      -- wrapped lines preserve indentation
+vim.opt.showbreak = "↪ "        -- visual indicator for wrapped lines
 vim.opt.showmode = false
 vim.opt.laststatus = 3
 
@@ -65,3 +68,6 @@ vim.opt.confirm = true
 vim.opt.fillchars = { fold = " ", diff = "╱", eob = " " }
 vim.opt.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+
+-- Live preview for :s/find/replace/ commands (VSCode-like)
+vim.opt.inccommand = "split"

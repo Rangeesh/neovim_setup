@@ -43,9 +43,11 @@ return {
         map("n", "<leader>hu", gs.undo_stage_hunk, "Undo stage hunk")
         map("n", "<leader>hR", gs.reset_buffer, "Reset buffer")
         map("n", "<leader>hp", gs.preview_hunk, "Preview hunk")
+        map("n", "<leader>hi", gs.preview_hunk_inline, "Preview hunk inline")
         map("n", "<leader>hb", function() gs.blame_line({ full = true }) end, "Blame line")
         map("n", "<leader>hd", gs.diffthis, "Diff this")
         map("n", "<leader>hD", function() gs.diffthis("~") end, "Diff this ~")
+        map("n", "<leader>ht", gs.toggle_deleted, "Toggle deleted lines inline")
       end,
     },
   },

@@ -44,6 +44,7 @@ return {
       -- Quick access
       { "<leader><leader>", "<cmd>FzfLua files<CR>", desc = "Find files" },
       { "<leader>/", "<cmd>FzfLua live_grep<CR>", desc = "Live grep" },
+      { "<leader>fv", "<cmd>FzfLua files actions={ ['default']=require'fzf-lua.actions'.file_vsplit }<CR>", desc = "Find files -> vsplit" },
     },
     opts = {
       -- Global options
@@ -80,6 +81,11 @@ return {
         follow = false,
         fd_opts = [[--color=never --hidden --type f --type l --exclude .git --exclude node_modules --exclude __pycache__ --exclude .venv]],
         cwd_prompt = true,
+      },
+      buffers = {
+        prompt = "Buffers> ",
+        sort_lastused = true,          -- most recently used first
+        formatter = "path.filename_first",  -- show filename first, then path
       },
       grep = {
         prompt = "Grep> ",
